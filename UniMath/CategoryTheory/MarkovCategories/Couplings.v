@@ -27,6 +27,8 @@ Require Import UniMath.CategoryTheory.MarkovCategories.InformationFlowAxioms.
 Require Import UniMath.CategoryTheory.MarkovCategories.AlmostSurely.
 Require Import UniMath.CategoryTheory.MarkovCategories.Conditionals.
 
+Require Import UniMath.CategoryTheory.DaggerCategories.Categories.
+
 Import MonoidalNotations.
 
 Local Open Scope cat.
@@ -430,7 +432,7 @@ End BloomCouplingLemmas.
 #[global] Opaque coupling_composition.
 
 Section CouplingsCategory.
-  Context {C : markov_category_with_conditionals}.
+  Context (C : markov_category_with_conditionals).
 
   Definition cat_couplings_identity (p : state C) : coupling p p.
     Proof.
@@ -530,3 +532,44 @@ Section CouplingsCategory.
   Defined.
 
 End CouplingsCategory.
+
+Section CouplingsDaggerStructure.
+  Context {C : markov_category_with_conditionals}.
+
+  Definition couplings_dagger_structure : dagger_structure (couplings C).
+  Proof.
+    intros p q γ.
+    cbn in *.
+    use make_coupling.
+    - apply coupling_dagger. exact γ.
+    - abstract (
+        rewrite <- (coupling_cod γ);
+        apply coupling_dagger_dom).
+    - abstract (
+      rewrite <- (coupling_dom γ);
+      apply coupling_dagger_cod).
+  Defined.
+
+  Definition couplings_dagger_laws : dagger_laws couplings_dagger_structure.
+  Proof.
+    repeat split.
+    - (* identity *)
+      intros p.
+      apply coupling_ext ; cbn.
+      apply dagger_identity_coupling.
+   - (* composition *)
+      intros p q r β γ.
+      apply coupling_ext ; cbn.
+      rewrite dagger_coupling_composition ; 
+        [ reflexivity | apply couplings_composable ].
+   - (* Idempotence *)
+      intros p q γ.
+      apply coupling_ext ; cbn.
+      apply coupling_dagger_involution.
+  Defined.
+
+  Definition couplings_dagger : dagger (couplings C) 
+    := _ ,, couplings_dagger_laws.
+      
+End CouplingsDaggerStructure.
+  
