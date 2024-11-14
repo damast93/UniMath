@@ -13,8 +13,8 @@ Table of Contents
    3.2 Dagger
    3.3 Blooms
 4. Definition of the Category of Couplings [coupling C]
-5. Definition of the Dagger Structure on the Category of Couplings 
-
+5. Definition of the Dagger Structure on the Category of Couplings
+6. Univalence and Dagger Univalence for Couplings 
 
 References
 - T. Fritz - 'A synthetic approach to Markov kernels, conditional independence and theorems on sufficient statistics' 
@@ -32,6 +32,7 @@ Require Import UniMath.CategoryTheory.Monoidal.Structure.Symmetric.
 
 Require Import UniMath.CategoryTheory.MarkovCategories.MarkovCategory.
 Require Import UniMath.CategoryTheory.MarkovCategories.Determinism.
+Require Import UniMath.CategoryTheory.MarkovCategories.Univalence.
 
 Require Import UniMath.CategoryTheory.MarkovCategories.State.
 Require Import UniMath.CategoryTheory.MarkovCategories.InformationFlowAxioms.
@@ -39,6 +40,8 @@ Require Import UniMath.CategoryTheory.MarkovCategories.AlmostSurely.
 Require Import UniMath.CategoryTheory.MarkovCategories.Conditionals.
 
 Require Import UniMath.CategoryTheory.DaggerCategories.Categories.
+Require Import UniMath.CategoryTheory.DaggerCategories.Unitary.
+Require Import UniMath.CategoryTheory.DaggerCategories.Univalence.
 
 Import MonoidalNotations.
 
@@ -559,7 +562,7 @@ End CouplingsCategory.
 (** * 5. Definition of the Dagger Structure on the Category of Couplings *)
 
 Section CouplingsDaggerStructure.
-  Context {C : markov_category_with_conditionals}.
+  Context (C : markov_category_with_conditionals).
 
   Definition couplings_dagger_structure : dagger_structure (couplings C).
   Proof.
@@ -597,4 +600,14 @@ Section CouplingsDaggerStructure.
     := _ ,, couplings_dagger_laws.
       
 End CouplingsDaggerStructure.
-  
+
+(** * 6. Univalence and Dagger Univalence for Couplings *)
+
+Section Univalence.
+  Context {C : markov_category_with_conditionals}
+          (uni_C : is_markov_univalent C).
+
+  Proposition couplings_dagger_univalent : is_univalent_dagger (couplings_dagger C).
+  Proof.
+  Abort.
+End Univalence.

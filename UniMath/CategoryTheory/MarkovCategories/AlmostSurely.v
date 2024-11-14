@@ -16,6 +16,11 @@ the quotient modulo almost-sure equality.
 Some useful properties of almost-sure equality only hold when assuming further axioms such as causality. 
 Those properties are proved in `InformationFlowAxioms.v`.
 
+Table of Contents
+1. Definition of Almost Sure Equality
+2. Basic Lemmas 
+3. Definition of Almost Sure Determinism
+
 References
 - T. Fritz - 'A synthetic approach to Markov kernels, conditional independence and theorems on sufficient statistics' 
 **********************************************)
@@ -35,6 +40,8 @@ Import MonoidalNotations.
 Local Open Scope cat.
 Local Open Scope moncat.
 Local Open Scope markov.
+
+(** * 1. Definition of Almost Sure Equality *)
 
 Section DefAlmostSurely.
   Context {C : markov_category}.
@@ -85,6 +92,8 @@ End DefAlmostSurely.
 Arguments equal_almost_surely {C a x y} p f g /.
 Notation "f =_{ p } g" := (equal_almost_surely p f g) (at level 70) : markov.
 
+(** * 2. Basic Lemmas *)
+
 Section PropertiesAlmostSurely.
 
   Context {C : markov_category}
@@ -126,4 +135,25 @@ Section PropertiesAlmostSurely.
     reflexivity.
   Qed.
 
+  Proposition ase_precomp {y : C} (f g : x --> y) :
+    f =_{p} g -> p · f = p · g.
+  Proof.
+    intros ase.
+    rewrite <- (pairing_proj2 (identity _) f).
+    rewrite <- (pairing_proj2 (identity _) g).
+    rewrite !assoc.
+    rewrite ase.
+    reflexivity.
+  Qed.    
+
 End PropertiesAlmostSurely.
+
+(** * 3. Definition of Almost Sure Determinism *)
+
+Section AlmostSurelyDeterministic.
+  Context {C : markov_category}.
+
+  Definition is_deterministic_ase {a x y : C} (p : a --> x) (f : x --> y) : UU
+   := f · copy y =_{p} copy x · f #⊗ f.
+
+End AlmostSurelyDeterministic.

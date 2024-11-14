@@ -8,13 +8,14 @@ various consequences of the existence of conditionals for information flow axiom
 1. Definition of [markov_category_with_conditionals]
 2. Accessors
    - Specialized definitions and lemmas for conditional distributions
-3. Bayesian inverses
+3. Bayesian Inverses
    - Definition of the Bayesian inverse (dagger)
    - Every Markov category with conditonals comes with a 
      canonical choice of Bayesian inverse
-4. Consequences and derived information flow axioms
+4. Consequences and derived Information Flow Axioms
    - Every Markov category with conditionals is causal
    - Every Markov category with conditionals is positive
+5. The Dagger Structure of Bayesian Inverses
 
 References
 - T. Fritz - 'A synthetic approach to Markov kernels, conditional independence and theorems on sufficient statistics' 
@@ -411,3 +412,35 @@ Proof.
   intros x y z w f g h1 h2.
   apply causality_conclusion.
 Qed.
+
+(** * 5. The Dagger Structure of Bayesian Inverses *)
+
+Section DaggerLemmas.
+  Context {C : markov_category_with_conditionals}.
+
+  Proposition ase_determinism_coisometry {x y : C} (p : I_{C} --> x) (f : x --> y) :
+       is_deterministic_ase p f 
+    -> (bayesian_inverse p f) · f =_{p·f} identity y.
+  Proof.
+    intros det_ase.
+    apply make_equal_almost_surely_r.
+    
+    etrans. {
+      rewrite <- pairing_tensor_r.
+      rewrite assoc.
+      rewrite bayesian_inverse_eq_r.
+      rewrite assoc'.
+      rewrite pairing_tensor_r.
+      rewrite id_left.
+      reflexivity. }
+
+    rewrite pairing_id.
+    rewrite pairing_eq.
+    rewrite assoc'.
+    
+    use ase_precomp.
+    apply ase_symm.
+    exact det_ase.
+  Qed.    
+  
+End DaggerLemmas.
