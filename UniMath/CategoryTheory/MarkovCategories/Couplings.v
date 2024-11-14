@@ -5,6 +5,17 @@ A coupling between states p,q is a joint state γ which marginalizes to p and q.
 We prove various lemmas about such couplings. For a Markov category C with conditionals, 
 couplings can be composed to form a category [couplings C]. 
 
+Table of Contents
+1. Definition of Couplings [coupling p q]
+2. Accessors/Coercions
+3. Definitions and Lemmas about Couplings
+   3.1 Coupling Composition
+   3.2 Dagger
+   3.3 Blooms
+4. Definition of the Category of Couplings [coupling C]
+5. Definition of the Dagger Structure on the Category of Couplings 
+
+
 References
 - T. Fritz - 'A synthetic approach to Markov kernels, conditional independence and theorems on sufficient statistics' 
 **********************************************)
@@ -35,6 +46,8 @@ Local Open Scope cat.
 Local Open Scope moncat.
 Local Open Scope markov.
 
+(** * 1. Definition of Couplings [coupling p q] *)
+
 Definition coupling {C : markov_category} {x y : C} (p : I_{C} --> x) (q : I_{C} --> y) : UU
   := ∑ (γ : I_{C} --> x ⊗ y), (γ · proj1 = p) × (γ · proj2 = q).
 
@@ -44,6 +57,8 @@ Proof.
   exists γ.
   split; assumption.
 Defined.
+
+(** * 2. Accessors/Coercions *)
 
 Coercion coupling_to_state {C : markov_category} {x y : C} 
         {p : I_{C} --> x} {q : I_{C} --> y} (γ : coupling p q) : I_{C} --> x ⊗ y := pr1 γ. 
@@ -73,6 +88,10 @@ Proposition coupling_cod {C : markov_category} {x y : C}
 Proof.
   exact (pr22 γ).
 Defined.
+
+(** * 3. Definitions and Lemmas about Couplings *)
+
+(** * 3.1 Coupling Composition *)
 
 Section CouplingCompositionLemmas.
   Context {C : markov_category_with_conditionals}.
@@ -264,6 +283,7 @@ Section CouplingCompositionLemmas.
 
 End CouplingCompositionLemmas.
 
+(** * 3.2 Dagger *)
 
 Section CouplingDaggerLemmas.
   Context {C : markov_category_with_conditionals}.
@@ -341,6 +361,7 @@ Section CouplingDaggerLemmas.
 
 End CouplingDaggerLemmas.
 
+(** * 3.3 Blooms *)
 
 Section BloomCouplingLemmas.
   Context {C : markov_category_with_conditionals}.
@@ -430,6 +451,8 @@ Section BloomCouplingLemmas.
 End BloomCouplingLemmas.
 
 #[global] Opaque coupling_composition.
+
+(** * 4. Definition of the Category of Couplings [coupling C] *)
 
 Section CouplingsCategory.
   Context (C : markov_category_with_conditionals).
@@ -532,6 +555,8 @@ Section CouplingsCategory.
   Defined.
 
 End CouplingsCategory.
+
+(** * 5. Definition of the Dagger Structure on the Category of Couplings *)
 
 Section CouplingsDaggerStructure.
   Context {C : markov_category_with_conditionals}.
