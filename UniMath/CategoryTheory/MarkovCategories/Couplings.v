@@ -610,4 +610,5 @@ Section Univalence.
   Proposition couplings_dagger_univalent : is_univalent_dagger (couplings_dagger C).
   Proof.
   Abort.
+
 End Univalence.

@@ -34,6 +34,7 @@ Require Import UniMath.CategoryTheory.Monoidal.Structure.Cartesian.
 Require Import UniMath.CategoryTheory.Monoidal.Structure.Symmetric.
 
 Require Import UniMath.CategoryTheory.MarkovCategories.MarkovCategory.
+Require Import UniMath.CategoryTheory.MarkovCategories.Determinism.
 
 Import MonoidalNotations.
 
@@ -122,6 +123,14 @@ Section PropertiesAlmostSurely.
     reflexivity.
   Qed.
 
+  Proposition ase_from_eq {y : C} (f g : x --> y) : 
+    f = g -> f =_{p} g.
+  Proof.
+    intros e.
+    rewrite e.
+    apply ase_refl.
+  Qed.
+
   Proposition ase_postcomp {y z : C} (f1 f2 : x --> y) (h : y --> z) :
        f1 =_{p} f2 
     -> f1 · h =_{p} f2 · h.
@@ -155,5 +164,14 @@ Section AlmostSurelyDeterministic.
 
   Definition is_deterministic_ase {a x y : C} (p : a --> x) (f : x --> y) : UU
    := f · copy y =_{p} copy x · f #⊗ f.
+
+  Proposition deterministic_implies_determinstic_ase 
+            {a x y : C} (p : a --> x) (f : x --> y) :
+    is_deterministic f -> is_deterministic_ase p f.
+  Proof.
+    intros e.
+    apply ase_from_eq.
+    exact e.
+  Qed.
 
 End AlmostSurelyDeterministic.
