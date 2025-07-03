@@ -34,6 +34,8 @@ Require Import UniMath.CategoryTheory.Limits.Products.
 Require Import UniMath.CategoryTheory.Limits.Coequalizers.
 Require Import UniMath.CategoryTheory.Limits.Coproducts.
 Require Import UniMath.CategoryTheory.Limits.Pushouts.
+Require Import UniMath.CategoryTheory.OppositeCategory.Core.
+Require Import UniMath.CategoryTheory.Limits.Opp.
 Require Import UniMath.CategoryTheory.Adjunctions.Core.
 
 Local Open Scope cat.
@@ -123,6 +125,18 @@ Proof.
               (z_iso_Terminals HC₁ (make_Terminal _ Hx)))).
 Defined.
 
+Definition preserves_chosen_terminal_to_z_iso
+  {C₁ C₂ : category}
+  {T₁ : Terminal C₁}
+  {F : C₁ ⟶ C₂}
+  (F_T : preserves_chosen_terminal T₁ F)
+  : ∏ T₂ : Terminal C₂, z_iso T₂ (F T₁).
+Proof.
+  intro T₂.
+  use (z_iso_inv (preserves_terminal_to_z_iso _ _ T₁ T₂)).
+  exact (preserves_terminal_if_preserves_chosen _ _ F_T).
+Defined.
+
 Definition preserves_terminal_chosen_to_chosen
            {C₁ C₂ : category}
            (T₁ : Terminal C₁)
@@ -152,6 +166,26 @@ Proof.
   - exact T₂.
   - exact HF.
 Defined.
+
+Lemma identity_preserves_chosen_terminal
+  {C : category} (T : Terminal C)
+  : preserves_chosen_terminal T (functor_identity C).
+Proof.
+  apply T.
+Qed.
+
+Lemma composition_preserves_chosen_terminal
+  {C₀ C₁ C₂ : category}
+  {F : functor C₀ C₁} {G : functor C₁ C₂}
+  {T₀ : Terminal C₀} {T₁ : Terminal C₁}
+  (F_pT : preserves_chosen_terminal T₀ F)
+  (G_pT : preserves_chosen_terminal T₁ G)
+  : preserves_chosen_terminal T₀ (functor_composite F G).
+Proof.
+  set (t₁ := preserves_terminal_if_preserves_chosen _ _ F_pT).
+  set (t₂ := preserves_terminal_if_preserves_chosen _ _ G_pT).
+  apply (t₂ _ (t₁ _ (pr2 T₀))).
+Qed.
 
 Definition preserves_chosen_terminal_eq
            {C₁ C₂ : category}
@@ -353,6 +387,89 @@ Proof.
        rewrite BinProductPr2Commutes ;
        apply idpath).
 Defined.
+
+Proposition preserves_binproduct_of_arrows
+            {C₁ C₂ : category}
+            {BC₁ : BinProducts C₁}
+            {BC₂ : BinProducts C₂}
+            {F : C₁ ⟶ C₂}
+            (HF : preserves_binproduct F)
+            {x₁ x₂ y₁ y₂ : C₁}
+            (f : x₁ --> x₂)
+            (g : y₁ --> y₂)
+  : inv_from_z_iso (preserves_binproduct_to_z_iso F HF _ _)
+    · #F(BinProductOfArrows _ (BC₁ _ _) (BC₁ _ _) f g)
+    =
+    BinProductOfArrows _ (BC₂ _ _) (BC₂ _ _) (#F f) (#F g)
+    · inv_from_z_iso (preserves_binproduct_to_z_iso F HF _ _).
+Proof.
+  cbn.
+  pose (H₁ := preserves_binproduct_to_binproduct F HF (BC₁ x₁ y₁)).
+  pose (H₂ := preserves_binproduct_to_binproduct F HF (BC₁ x₂ y₂)).
+  use (BinProductArrowsEq
+         _ _ _
+         (preserves_binproduct_to_binproduct F HF (BC₁ x₂ y₂))).
+  - etrans.
+    {
+      unfold BinProductOfArrows.
+      apply maponpaths_2.
+      apply maponpaths.
+      apply (preserves_binproduct_to_preserves_arrow F HF (BC₁ _ _) (BC₂ _ _)).
+    }
+    cbn.
+    rewrite !assoc'.
+    etrans.
+    {
+      do 2 apply maponpaths.
+      apply (BinProductPr1Commutes _ _ _ H₂).
+    }
+    rewrite BinProductPr1Commutes.
+    etrans.
+    {
+      rewrite functor_comp.
+      rewrite !assoc.
+      apply maponpaths_2.
+      apply (BinProductPr1Commutes _ _ _ H₁).
+    }
+    refine (!_).
+    etrans.
+    {
+      apply maponpaths.
+      apply (BinProductPr1Commutes _ _ _ H₂).
+    }
+    rewrite BinProductOfArrowsPr1.
+    apply idpath.
+  - etrans.
+    {
+      unfold BinProductOfArrows.
+      apply maponpaths_2.
+      apply maponpaths.
+      apply (preserves_binproduct_to_preserves_arrow F HF (BC₁ _ _) (BC₂ _ _)).
+    }
+    cbn.
+    rewrite !assoc'.
+    etrans.
+    {
+      do 2 apply maponpaths.
+      apply (BinProductPr2Commutes _ _ _ H₂).
+    }
+    rewrite BinProductPr2Commutes.
+    etrans.
+    {
+      rewrite functor_comp.
+      rewrite !assoc.
+      apply maponpaths_2.
+      apply (BinProductPr2Commutes _ _ _ H₁).
+    }
+    refine (!_).
+    etrans.
+    {
+      apply maponpaths.
+      apply (BinProductPr2Commutes _ _ _ H₂).
+    }
+    rewrite BinProductOfArrowsPr2.
+    apply idpath.
+Qed.
 
 Definition identity_preserves_binproduct
           (C : category)
@@ -896,6 +1013,52 @@ Proof.
               (ziso_Initials HC₁ (make_Initial _ Hx)))).
 Defined.
 
+Definition preserves_chosen_initial_eq
+           {C₁ C₂ : category}
+           (F : C₁ ⟶ C₂)
+           (T₁ : Initial C₁)
+           (T₂ : Initial C₂)
+  : UU
+  := ∥ F T₁ = T₂ ∥.
+
+Proposition identity_preserves_chosen_initial_eq
+            {C : category}
+            (T : Initial C)
+  : preserves_chosen_initial_eq (functor_identity C) T T.
+Proof.
+  apply hinhpr.
+  apply idpath.
+Qed.
+
+Proposition composition_preserves_chosen_initial_eq
+            {C₁ C₂ C₃ : category}
+            {F : C₁ ⟶ C₂}
+            {G : C₂ ⟶ C₃}
+            {T₁ : Initial C₁}
+            {T₂ : Initial C₂}
+            {T₃ : Initial C₃}
+            (HF : preserves_chosen_initial_eq F T₁ T₂)
+            (HG : preserves_chosen_initial_eq G T₂ T₃)
+  : preserves_chosen_initial_eq (F ∙ G) T₁ T₃.
+Proof.
+  revert HF.
+  use factor_through_squash.
+  {
+    apply propproperty.
+  }
+  intro p.
+  revert HG.
+  use factor_through_squash.
+  {
+    apply propproperty.
+  }
+  intro q.
+  cbn.
+  apply hinhpr.
+  rewrite p, q.
+  apply idpath.
+Qed.
+
 (**
  7. Preservation of binary coproducts
  *)
@@ -1055,8 +1218,7 @@ Definition preserves_coequalizer
        (p : f · h = g · h)
        (Fp : #F f · #F h = #F g · #F h),
      isCoequalizer f g h p
-     →
-     isCoequalizer (#F f) (#F g) (#F h) Fp.
+     → isCoequalizer (#F f) (#F g) (#F h) Fp.
 
 Definition identity_preserves_coequalizer
            (C : category)
@@ -1089,6 +1251,29 @@ Definition isaprop_preserves_coequalizer
 Proof.
   repeat (use impred ; intro).
   use isapropiscontr.
+Qed.
+
+Definition preserves_coequalizer_opp
+           {C₁ C₂ : category}
+           (F : C₁ ⟶ C₂)
+  : preserves_coequalizer F
+      ≃ preserves_equalizer (functor_op F).
+Proof.
+  use weqimplimpl.
+  - intro p_co.
+    intros x y e f g h p Fp p_e.
+    use isCoequalizer_opp.
+    set (Fp_e := isEqualizer_opp _ _ _ _ _ p_e).
+    apply (p_co _ _ _ _ _ _ _ _ Fp_e).
+  - intro p_coop.
+    intros x y e f g h p Fp p_e.
+    use (isEqualizer_opp (C₂^opp)).
+    use (p_coop).
+    + exact p.
+    + apply isCoequalizer_opp.
+      exact p_e.
+  - apply isaprop_preserves_coequalizer.
+  - apply isaprop_preserves_equalizer.
 Qed.
 
 Definition preserves_chosen_coequalizer

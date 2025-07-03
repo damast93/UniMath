@@ -5,10 +5,13 @@
  (name UniMath)
  (package coq-unimath)
  (theories Ltac2)
+ (coqdoc_flags
+        :standard
+        -interpolate
+        --charset utf-8)
  (flags :standard
         -noinit
         -indices-matter
-        -type-in-type
         -w -notation-overridden))
 
 (rule

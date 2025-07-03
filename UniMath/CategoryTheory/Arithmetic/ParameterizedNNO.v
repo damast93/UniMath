@@ -24,10 +24,12 @@
  1. Parameterized NNOs
  2. Accessors
  3. Every parameterized NNO is an NNO
- 4. Uniqueness of parameterized NNOs
- 5. Preservation of parameterized NNOs
- 6. Examples of functors that preserve parameterized NNOs
- 7. Independence of the choice of binary products
+ 4. Parameterized NNOs are unique up to isomorphism
+ 5. Uniqueness of parameterized NNOs
+ 6. Preservation of parameterized NNOs
+ 7. Examples of functors that preserve parameterized NNOs
+ 8. Independence of the choice of binary products
+ 9. Independence of the choice of terminal object
 
  **********************************************************************************************)
 Require Import UniMath.MoreFoundations.All.
@@ -324,58 +326,27 @@ Section ParameterizedNNO.
         + exact (is_NNO_parameterized_NNO_mor_Z N y zy sy).
         + exact (is_NNO_parameterized_NNO_mor_S N y zy sy).
     Defined.
+
+    Definition parameterized_NNO_to_NNO
+      : NNO T.
+    Proof.
+      use make_NNO.
+      - exact N.
+      - exact (parameterized_NNO_Z N).
+      - exact (parameterized_NNO_S N).
+      - apply is_NNO_parameterized_NNO.
+    Defined.
   End ParameterizedNNOToNNO.
 
-  (** * 4. Uniqueness of parameterized NNOs *)
-  Definition mor_between_parameterized_NNO
-             (N₁ N₂ : parameterized_NNO)
-    : N₁ --> N₂.
+  (** * 4. Parameterized NNOs are unique up to isomorphism *)
+  Lemma parameterized_NNO_unique_up_to_iso
+    (N M : parameterized_NNO)
+    : z_iso N M.
   Proof.
-    use is_NNO_parameterized_NNO_mor.
-    - exact (parameterized_NNO_Z N₂).
-    - exact (parameterized_NNO_S N₂).
+    exact (iso_between_NNO (parameterized_NNO_to_NNO N) (parameterized_NNO_to_NNO M)).
   Defined.
 
-  Proposition mor_between_parameterized_NNO_Z
-              (N₁ N₂ : parameterized_NNO)
-    : parameterized_NNO_Z N₁ · mor_between_parameterized_NNO N₁ N₂
-      =
-      parameterized_NNO_Z N₂.
-  Proof.
-    apply is_NNO_parameterized_NNO_mor_Z.
-  Qed.
-
-  Proposition mor_between_parameterized_NNO_S
-              (N₁ N₂ : parameterized_NNO)
-    : parameterized_NNO_S N₁ · mor_between_parameterized_NNO N₁ N₂
-      =
-      mor_between_parameterized_NNO N₁ N₂ · parameterized_NNO_S N₂.
-  Proof.
-    apply is_NNO_parameterized_NNO_mor_S.
-  Qed.
-
-  Proposition mor_between_parameterized_NNO_eq
-              (N₁ N₂ : parameterized_NNO)
-    : mor_between_parameterized_NNO N₁ N₂ · mor_between_parameterized_NNO N₂ N₁
-      =
-      identity _.
-  Proof.
-    use is_NNO_parameterized_NNO_unique.
-    - exact (parameterized_NNO_Z N₁).
-    - exact (parameterized_NNO_S N₁).
-    - rewrite !assoc.
-      rewrite !mor_between_parameterized_NNO_Z.
-      apply idpath.
-    - rewrite !assoc.
-      rewrite mor_between_parameterized_NNO_S.
-      rewrite !assoc'.
-      rewrite mor_between_parameterized_NNO_S.
-      apply idpath.
-    - apply id_right.
-    - rewrite id_left, id_right.
-      apply idpath.
-  Qed.
-
+  (** * 5. Uniqueness of parameterized NNOs *)
   Proposition parameterized_NNO_eq
               {N₁ N₂ : parameterized_NNO}
               (p : (N₁ : C) = N₂)
@@ -425,12 +396,9 @@ Section ParameterizedNNO.
     use invproofirrelevance.
     intros N₁ N₂.
     use (parameterized_NNO_from_iso HC).
-    - use make_z_iso.
-      + exact (mor_between_parameterized_NNO N₁ N₂).
-      + exact (mor_between_parameterized_NNO N₂ N₁).
-      + split ; apply mor_between_parameterized_NNO_eq.
-    - apply mor_between_parameterized_NNO_Z.
-    - apply mor_between_parameterized_NNO_S.
+    - exact (iso_between_NNO (parameterized_NNO_to_NNO N₁) (parameterized_NNO_to_NNO N₂)).
+    - apply (NNO_mor_Z _ (parameterized_NNO_to_NNO N₁)).
+    - apply (NNO_mor_S _ (parameterized_NNO_to_NNO N₁)).
   Qed.
 End ParameterizedNNO.
 
@@ -447,7 +415,7 @@ Proof.
   apply univalent_category_is_univalent.
 Qed.
 
-(** * 5. Preservation of parameterized NNOs *)
+(** * 6. Preservation of parameterized NNOs *)
 Section PreservationNNO.
   Context {C₁ C₂ : category}
           {T₁ : Terminal C₁}
@@ -496,7 +464,7 @@ Section PreservationNNO.
   Qed.
 End PreservationNNO.
 
-(** * 6. Examples of functors that preserve parameterized NNOs *)
+(** * 7. Examples of functors that preserve parameterized NNOs *)
 Proposition id_preserves_parameterized_NNO_eq
             {C : category}
             (T : Terminal C)
@@ -641,7 +609,7 @@ Section Composition.
   Defined.
 End Composition.
 
-(** * 7. Independence of the choice of binary products *)
+(** * 8. Independence of the choice of binary products *)
 Proposition is_parameterized_NNO_prod_independent
             {C : univalent_category}
             {T : Terminal C}
@@ -720,3 +688,34 @@ Proof.
     }
     apply idpath.
 Qed.
+
+(** * 9. Independence of the choice of terminal *)
+Lemma parameterized_NNO_independent_of_terminal_is_parameterized_NNO
+  {C : category} {T : Terminal C} {P : BinProducts C} (N : parameterized_NNO T P) (T' : Terminal C)
+  : is_parameterized_NNO T' P N (TerminalArrow T T' · parameterized_NNO_Z N) (parameterized_NNO_S N).
+Proof.
+  intros b y z s.
+  use (iscontrweqb' (pr222 N b y z s)).
+  use weqfibtototal.
+  intro f.
+  simpl.
+  use weqdirprodf.
+  - rewrite assoc.
+    assert (pf : TerminalArrow T' b · TerminalArrow T T' = TerminalArrow T b).
+    { use TerminalArrowUnique. }
+    rewrite pf.
+    apply idweq.
+  - apply idweq.
+Qed.
+
+Lemma parameterized_NNO_independent_of_terminal
+  {C : category} {T : Terminal C} {P : BinProducts C} (N : parameterized_NNO T P) (T' : Terminal C)
+  : parameterized_NNO T' P.
+Proof.
+  use make_parameterized_NNO.
+  - exact N.
+  - refine (_ · parameterized_NNO_Z N).
+    apply z_iso_Terminals.
+  - exact (parameterized_NNO_S N).
+  - apply parameterized_NNO_independent_of_terminal_is_parameterized_NNO.
+Defined.

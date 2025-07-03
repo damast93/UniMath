@@ -267,7 +267,7 @@ Section Total_Category.
       = (inv_from_z_iso f,, inv_mor_disp_from_z_iso ff).
   Proof.
     (* Could de-opacify [is_z_iso_total] and then use [inv_from_z_iso_].  If de-opacfying [is_z_iso_total] would make its inverse compute definitionally, that’d be wonderful, but for the sake of just this one lemma, it’s probably not worth it.  So we prove this the hard way. *)
-    apply cancel_precomposition_z_iso with (total_z_iso f ff).
+    apply cancel_z_iso' with (total_z_iso f ff).
     etrans. apply z_iso_inv_after_z_iso. apply pathsinv0.
     use total2_paths_f; cbn.
     - apply z_iso_inv_after_z_iso.
@@ -337,6 +337,49 @@ Section TotalUnivalent.
     - exact (is_univalent_total_category (pr2 C) (pr2 D)).
   Defined.
 End TotalUnivalent.
+
+(** ** [idtoiso] in the total category *)
+Proposition idtoiso_total_category
+            {C : category}
+            {D : disp_cat C}
+            {x y : total_category D}
+            (p : x = y)
+  : pr1 (idtoiso (C := total_category D) p)
+    =
+    (pr1 (idtoiso (base_paths _ _ p))
+    ,,
+    (pr1 (idtoiso_disp (base_paths _ _ p) (fiber_paths p)))).
+Proof.
+  induction p ; cbn.
+  apply idpath.
+Qed.
+
+Proposition idtoiso_total_category_pr2_path
+            {C : category}
+            {D : disp_cat C}
+            {x y : total_category D}
+            (p : x = y)
+  : pr1 (idtoiso (base_paths x y p)) = pr11 (idtoiso p).
+Proof.
+  induction p ; cbn.
+  apply idpath.
+Defined.
+
+Proposition idtoiso_total_category_pr2
+            {C : category}
+            {D : disp_cat C}
+            {x y : total_category D}
+            (p : x = y)
+  : pr21 (idtoiso (C := total_category D) p)
+    =
+    transportf
+      (λ z, _ -->[ z ] _)
+      (idtoiso_total_category_pr2_path p)
+      (pr1 (idtoiso_disp (base_paths _ _ p) (fiber_paths p))).
+Proof.
+  induction p ; cbn.
+  apply idpath.
+Qed.
 
 (** ** Total functors of displayed functors*)
 Section Total_Functors.

@@ -255,8 +255,8 @@ Proof.
   refine '(_ @ !maponpaths (λ x, (abs (app x _))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ (app x _)))) (inflate_subst _ _ _)).
   refine '(
-    maponpaths (λ x, abs (app (_ x) _)) _ @
-    maponpaths (λ x, abs (app _ (app (_ x) _))) _
+    maponpaths (λ x, abs (app (a • x) _)) _ @
+    maponpaths (λ x, abs (app _ (app (b • x) _))) _
   );
     apply funextfun;
     intro i;
@@ -436,6 +436,39 @@ Proof.
     exact (maponpaths (λ x, ((_ ∘ x) ∘ _)) (var_subst _ _ _)).
 Qed.
 
+Lemma subst_is_compose
+  (L : lambda_theory)
+  (Lβ : has_β L)
+  (A B : L 0)
+  : appx A • (λ _, appx B) = appx (A ∘ B).
+Proof.
+  refine '(maponpaths (λ x, x • _) (appx_to_app _) @ _).
+  refine '(maponpaths (λ x, _ • (λ _, x)) (appx_to_app _) @ _).
+  refine '(subst_app _ _ _ _ @ _).
+  refine '(maponpaths (λ x, (app x _)) (subst_inflate _ _ _) @ _).
+  refine '(maponpaths (λ x, (app _ x)) (var_subst _ _ _) @ !_).
+  refine '(appx_to_app _ @ _).
+  refine '(maponpaths (λ x, (app x _)) (inflate_compose _ _ _) @ _).
+  refine '(app_compose _ Lβ _ _ _ @ _).
+  apply (maponpaths (λ x, app (A • x) _)).
+  apply funextfun.
+  intro i.
+  apply fromempty.
+  apply (negstn0 i).
+Qed.
+
+Lemma compose_is_subst
+  (L : lambda_theory)
+  (Lβ : has_β L)
+  (A B : L 1)
+  : abs A ∘ abs B = abs (A • (λ _, B)).
+Proof.
+  refine '(_ @ maponpaths (λ x, abs (x • _)) (Lβ _ _)).
+  refine '(_ @ maponpaths (λ x, abs (_ • (λ _, x))) (Lβ _ _)).
+  refine '(_ @ !maponpaths _ (subst_is_compose _ Lβ _ _)).
+  exact (maponpaths _ (!Lβ _ _)).
+Qed.
+
 (** * 3. Pair *)
 
 Definition pair
@@ -483,8 +516,8 @@ Proof.
   refine '(_ @ !maponpaths (λ x, (abs (app (app _ x) _))) (inflate_subst _ _ _)).
   refine '(_ @ !maponpaths (λ x, (abs (app _ x))) (inflate_subst _ _ _)).
   refine '(
-    maponpaths (λ x, abs (app (app _ (_ x)) _)) _ @
-    maponpaths (λ x, abs (app _ (_ x))) _
+    maponpaths (λ x, abs (app (app _ (a • x)) _)) _ @
+    maponpaths (λ x, abs (app _ (b • x))) _
   );
     apply funextfun;
     intro i;
