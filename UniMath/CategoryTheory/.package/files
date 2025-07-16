@@ -753,6 +753,7 @@ DaggerCategories/Isometry.v
 DaggerCategories/Univalence.v
 DaggerCategories/Functors.v
 DaggerCategories/Transformations.v
+DaggerCategories/Dilators.v
 
 Monoidal/DaggerMonoidal.v
 
@@ -779,4 +780,4 @@ MarkovCategories/InformationFlowAxioms.v
 MarkovCategories/State.v
 MarkovCategories/ProbabilitySpaces.v
 MarkovCategories/Couplings.v
-MarkovCategories/Dilators.v
+MarkovCategories/RelativeProduct.v
