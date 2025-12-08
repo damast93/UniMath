@@ -40,9 +40,6 @@ Local Open Scope cat.
 Local Open Scope moncat.
 Local Open Scope markov.
 
-Definition full_support {C : markov_category} {x : C} (p : I_{C} --> x) : UU
-  := ∏ (y : C) (f g : x --> y), (f =_{p} g) -> f = g.  
-
 Section BackdoorExample.
   Context {C : markov_category_with_conditionals}.
 
@@ -56,6 +53,8 @@ X --> Y
    Z
 
 we can compute the causal effect P(Y|do(X)) by adjusting on Z.
+
+P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
 *)
 
   Context (x y z : C).
@@ -75,35 +74,23 @@ we can compute the causal effect P(Y|do(X)) by adjusting on Z.
     exact (pz · ⟨px, identity z⟩ · ⟨identity _, py⟩).
   Defined.  
 
-  Proposition y_do_x_identifiable1 
-    (m1 m2 : causal_model) 
-    (e : joint m1 = joint m2)
-    :  y_do_x m1 = y_do_x m2.
-  Proof.
-  Admitted.
+  (* explicit formula to compute the intervention *)
 
-  (* support fn *)
-  Definition y_do_x_compute
-    (pxzy : I_{C} --> x ⊗ z ⊗ y)
-    : x --> y.
-  Proof.
-  Admitted.
-
-  (* exists fn, ... *)
-
-  Proposition y_do_x_identifiable2 
-    (m : causal_model)
-    : y_do_x_compute (joint m) = y_do_x m.
-  Proof.
-  Admitted.
-
+  Definition y_do_x_formula (p : I_{C} --> x ⊗ z ⊗ y) : x --> y := 
+    let pz := p · proj1 · proj2 in
+    mon_rinvunitor _ · (identity x #⊗ pz) · p|1.
   
-  Proposition y_do_x_identifiable3 
-    (pxzy : I_{C} --> x ⊗ z ⊗ y)
+  (* Identifiability proof:
+     for any distribution compatible with the causal structure,
+     the intervention can be computed extensionally using the formula
+  *)
+
+  Proposition y_do_x_identifiability
+    (p : I_{C} --> x ⊗ z ⊗ y)
+    (ff : full_support p)
     (m : causal_model)
-    (e : pxzy = joint m)
-    (ff : full_support pxzy)
-    : y_do_x_compute pxzy = y_do_x m.
+    (e : p = joint m)
+    : y_do_x_formula p = y_do_x m.
   Proof.
   Admitted.
 
