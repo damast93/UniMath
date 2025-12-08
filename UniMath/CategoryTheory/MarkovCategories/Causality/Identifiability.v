@@ -40,6 +40,25 @@ Local Open Scope cat.
 Local Open Scope moncat.
 Local Open Scope markov.
 
+(* General identifiability *)
+
+Definition weakly_identifiable {X Y Z : UU} (s : X -> Y) (t : X -> Z) : UU 
+  := ∏ x1 x2, s x1 = s x2 -> t x1 = t x2.
+
+Definition strongly_identifiable {X Y Z : UU} (s : X -> Y) (t : X -> Z) : UU 
+  := ∑ f : Y -> Z, ∏ x : X, t x = f (s x).
+
+Proposition strongly_identifiable_implies_weakly {X Y Z : UU} {s : X -> Y} {t : X -> Z}
+  : strongly_identifiable s t -> weakly_identifiable s t.
+Proof.
+  intros [f p] x1 x2 q.
+  rewrite p, p, q.
+  reflexivity.
+Qed.
+
+Definition strongly_conditionally_identifiable {X Y Z : UU} (P : Y -> UU) (s : X -> Y) (t : X -> Z) : UU 
+  := ∑ f : Y -> Z, ∏ x : X, P (s x) -> t x = f (s x).
+
 Section BackdoorExample.
   Context {C : markov_category_with_conditionals}.
 
@@ -76,7 +95,7 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
 
   (* explicit formula to compute the intervention *)
 
-  Definition y_do_x_formula (p : I_{C} --> x ⊗ z ⊗ y) : x --> y := 
+  Definition adjustment_formula (p : I_{C} --> x ⊗ z ⊗ y) : x --> y := 
     let pz := p · proj1 · proj2 in
     mon_rinvunitor _ · (identity x #⊗ pz) · p|1.
   
@@ -118,9 +137,9 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
       reflexivity.
     Qed.
 
-    Lemma identifiability_aux : y_do_x_formula p = intervene_x (pz ,, px ,, py).
+    Lemma identifiability_aux : adjustment_formula p = intervene_x (pz ,, px ,, py).
     Proof.
-      unfold y_do_x_formula, intervene_x.
+      unfold adjustment_formula, intervene_x.
       rewrite lem1.
       rewrite lem2.
       reflexivity.
@@ -128,15 +147,28 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
 
   End IdentifiabilityProof.
 
-  Proposition y_do_x_identifiability
+  Proposition intervene_x_identifiability
     (p : I_{C} --> x ⊗ z ⊗ y)
     (ff : full_support (p · proj1))
     (m : causal_model)
     (e : p = joint m)
-    : y_do_x_formula p = intervene_x m.
+    : adjustment_formula p = intervene_x m.
   Proof.
     destruct m as (pz & px & py).
     apply identifiability_aux; assumption.
+  Qed.
+
+  (* We can cast this as a strong identifiability result *)
+
+  Theorem intervene_x_strong_identifiability :
+    strongly_conditionally_identifiable (fun p => full_support (p · proj1)) joint intervene_x.
+  Proof.
+    exists adjustment_formula.
+    intros m ff.
+    refine (!_).
+    apply intervene_x_identifiability.
+    - exact ff.
+    - reflexivity.
   Qed.
 
 End BackdoorExample.
