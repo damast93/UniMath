@@ -44,7 +44,7 @@ Section BackdoorExample.
   Context {C : markov_category_with_conditionals}.
 
 (* 
-In the causal structure  
+Theorem: For any distribution compatible with the causal structure  
 
 X --> Y
 ^     ^
@@ -62,7 +62,7 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
   Definition causal_model : UU := 
     (I_{C} --> z) × (z --> x) × (x ⊗ z --> y).
 
-  Definition y_do_x (m : causal_model) : x --> y.
+  Definition intervene_x (m : causal_model) : x --> y.
   Proof.
     destruct m as (pz & px & py).
     refine (mon_rinvunitor _ · (identity x #⊗ pz) · py).
@@ -85,13 +85,58 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
      the intervention can be computed extensionally using the formula
   *)
 
+  Section IdentifiabilityProof.
+    Context  
+      (p : I_{C} --> x ⊗ z ⊗ y)
+      (ff : full_support (p · proj1))
+      (pz : I_{C} --> z)
+      (px : z --> x)
+      (py : x ⊗ z --> y)
+      (e : p = joint (pz ,, px ,, py)).
+
+    Local Lemma lem1 : p|1 = py.
+    Proof.
+      apply ff.
+      apply ase_symm.
+      apply conditional_distribution_1_ase_unique.
+      rewrite e.
+      unfold joint.
+      rewrite <- !assoc.
+      do 2 apply maponpaths.
+      rewrite assoc, pairing_proj1, id_left.
+      reflexivity.
+    Qed.
+
+    Local Lemma lem2 : p · proj1 · proj2 = pz.
+    Proof.
+      assert (r : p · proj1 = pz · ⟨px, identity z⟩).
+      { rewrite e.
+        unfold joint.
+        rewrite <- assoc, pairing_proj1, id_right.
+        reflexivity. }
+      rewrite r, <- assoc, pairing_proj2, id_right.
+      reflexivity.
+    Qed.
+
+    Lemma identifiability_aux : y_do_x_formula p = intervene_x (pz ,, px ,, py).
+    Proof.
+      unfold y_do_x_formula, intervene_x.
+      rewrite lem1.
+      rewrite lem2.
+      reflexivity.
+    Qed.  
+
+  End IdentifiabilityProof.
+
   Proposition y_do_x_identifiability
     (p : I_{C} --> x ⊗ z ⊗ y)
-    (ff : full_support p)
+    (ff : full_support (p · proj1))
     (m : causal_model)
     (e : p = joint m)
-    : y_do_x_formula p = y_do_x m.
+    : y_do_x_formula p = intervene_x m.
   Proof.
-  Admitted.
+    destruct m as (pz & px & py).
+    apply identifiability_aux; assumption.
+  Qed.
 
 End BackdoorExample.
