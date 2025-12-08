@@ -104,6 +104,9 @@ End DefAlmostSurely.
 Arguments equal_almost_surely {C a x y} p f g /.
 Notation "f =_{ p } g" := (equal_almost_surely p f g) (at level 70) : markov.
 
+Definition full_support {C : markov_category} {x : C} (p : I_{C} --> x) : UU
+  := ∏ (y : C) (f g : x --> y), (f =_{p} g) -> f = g.
+
 (** * 2. Basic Lemmas *)
 
 Section PropertiesAlmostSurely.
