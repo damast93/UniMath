@@ -62,42 +62,48 @@ Definition strongly_conditionally_identifiable {X Y Z : UU} (P : Y -> UU) (s : X
 Section BackdoorExample.
   Context {C : markov_category_with_conditionals}.
 
-(* 
-Theorem: For any distribution compatible with the causal structure  
+  (* 
+  Theorem: For any distribution compatible with the causal structure  
 
-X --> Y
-^     ^
- \   / 
-  \ / 
-   Z
+  X --> Y
+  ^     ^
+  \   / 
+   \ / 
+    Z
 
-we can compute the causal effect P(Y|do(X)) by adjusting on Z.
+  we can compute the causal effect P(Y|do(X)) by adjusting on Z.
 
-P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
-*)
+  P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
+  *)
 
   Context (x y z : C).
 
   Definition causal_model : UU := 
     (I_{C} --> z) × (z --> x) × (x ⊗ z --> y).
 
-  Definition intervene_x (m : causal_model) : x --> y.
-  Proof.
-    destruct m as (pz & px & py).
-    refine (mon_rinvunitor _ · (identity x #⊗ pz) · py).
-  Defined.
+  (* Accessors *)
+  Definition make_causal_model
+    (pz : I_{C} --> z)
+    (px : z --> x)
+    (py : x ⊗ z --> y)
+    : causal_model := (pz ,, px ,, py).
 
-  Definition joint (m : causal_model) : I_{C} --> x ⊗ z ⊗ y.
-  Proof.
-    destruct m as (pz & px & py).
-    exact (pz · ⟨px, identity z⟩ · ⟨identity _, py⟩).
-  Defined.  
+  Definition pz (m : causal_model) := pr1 m.
+  Definition px (m : causal_model) := pr12 m.
+  Definition py (m : causal_model) := pr22 m.
+
+  #[global] Opaque causal_model.
+
+  Definition intervene_x (m : causal_model) : x --> y
+    := mon_rinvunitor _ · (identity x #⊗ (pz m)) · (py m).
+
+  Definition joint (m : causal_model) : I_{C} --> x ⊗ z ⊗ y
+    := (pz m) · ⟨(px m), identity z⟩ · ⟨identity _, py m⟩.
 
   (* explicit formula to compute the intervention *)
 
   Definition adjustment_formula (p : I_{C} --> x ⊗ z ⊗ y) : x --> y := 
-    let pz := p · proj1 · proj2 in
-    mon_rinvunitor _ · (identity x #⊗ pz) · p|1.
+    mon_rinvunitor _ · (identity x #⊗ (p · proj1 · proj2)) · p|1.
   
   (* Identifiability proof:
      for any distribution compatible with the causal structure,
@@ -160,6 +166,12 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
 
   (* We can cast this as a strong identifiability result *)
 
+  (* TODO: Come up with a good notation for strong identifiability
+   Notation "given x , { y = s | p } ~> t" 
+    := (strongly_conditionally_identifiable (fun y => p) (fun x => s) (fun x => t))
+    (at level 0).
+  *)
+
   Theorem intervene_x_strong_identifiability :
     strongly_conditionally_identifiable (fun p => full_support (p · proj1)) joint intervene_x.
   Proof.
@@ -172,3 +184,65 @@ P(Y|do(X)) = ∑ P(Y|X,Z)P(Z)
   Qed.
 
 End BackdoorExample.
+
+
+Section SmokingExample.
+  Context {C : markov_category_with_conditionals}.
+
+  (* An example of Pearl's front door criterion. Consider the following causal structure
+
+  S -> T -> C 
+  ^         ^
+  \        /
+   \      /
+    \    /
+       H
+
+  where smoking (S) causes cancer (C), mediated by tar (T). Despite smoking and cancer being
+  confounded by hidden factors (H), we can use the do-calculus to derive an expression for P(C|do(S)).
+
+  *)
+
+  Context (s t c : C).
+
+  Definition smoking_model : UU
+    := ∑ (h : C)
+         , (I_{C} --> h)
+         × (h --> s)
+         × (s --> t)
+         × (t ⊗ h --> c).
+
+  Definition auxcoh {x y z w : C} : x ⊗ (y ⊗ z) ⊗ w --> (x ⊗ y) ⊗ (z ⊗ w)
+    := (mon_rassociator _ _ _ #⊗ identity _) · mon_lassociator _ _ _.
+
+  Definition smoking_joint (m : smoking_model) : I_{C} --> s ⊗ t ⊗ c.
+  Proof.
+    destruct m as (h & ph & ps & pt & pc).
+    exact (
+      ph · 
+        ⟨ps · ⟨ identity s , pt · copy t⟩,
+         identity h⟩
+      · auxcoh · (identity _ #⊗ pc)).
+  Defined.
+
+  Definition smoking_intervention (m : smoking_model) : s --> s ⊗ t ⊗ c.
+  Proof.
+    destruct m as (h & ph & ps & pt & pc).
+    refine (
+      mon_rinvunitor _ ·
+      (⟨ identity s , pt · copy t ⟩ #⊗ ph)
+      · auxcoh
+      · (identity _ #⊗ pc)
+    ).
+  Defined.
+
+  Proposition smoking_intervention_identifiable 
+    : strongly_conditionally_identifiable 
+      (fun p => full_support (p · proj1))
+      smoking_joint
+      smoking_intervention.
+  Proof.
+    (* TODO *)
+  Abort.
+
+End SmokingExample.
