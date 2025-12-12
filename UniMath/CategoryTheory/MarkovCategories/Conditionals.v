@@ -37,6 +37,7 @@ Require Import UniMath.CategoryTheory.Monoidal.Structure.Symmetric.
 Require Import UniMath.CategoryTheory.MarkovCategories.MarkovCategory.
 Require Import UniMath.CategoryTheory.MarkovCategories.Determinism.
 Require Import UniMath.CategoryTheory.MarkovCategories.InformationFlowAxioms.
+Require Import UniMath.CategoryTheory.MarkovCategories.RelativePositivity.
 Require Import UniMath.CategoryTheory.MarkovCategories.AlmostSurely.
 
 Import MonoidalNotations.
@@ -562,3 +563,12 @@ Proof.
   intros x y z w f g h1 h2.
   apply causality_conclusion.
 Qed.
+
+Section RelativePositivity.
+
+  Proposition conditionals_imply_relative_positivity 
+    (C : markov_category_with_conditionals) : is_rel_positive C.
+  Proof.
+  Admitted.
+
+End RelativePositivity.
