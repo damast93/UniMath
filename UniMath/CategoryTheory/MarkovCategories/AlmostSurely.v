@@ -60,9 +60,30 @@ Section DefAlmostSurely.
     equal_almost_surely p f g -> p · ⟨f, identity _⟩ = p · ⟨g, identity _⟩.
   Proof. 
     intros e.
-    apply cancel_braiding.
-    rewrite !assoc', !pairing_sym_mon_braiding.
+    apply pairing_flip.
     apply equal_almost_surely_r.
+    assumption.
+  Qed.
+
+  Proposition equal_almost_surely_r2 {a x y z : C} (p : a --> x) (f g : x --> y) (h : x --> z) :
+    equal_almost_surely p f g -> p · ⟨h, f⟩ = p · ⟨h, g⟩.
+  Proof. 
+    intros e.
+    etrans. {
+      rewrite pairing_split_l, assoc. 
+      rewrite (equal_almost_surely_r p f g e).
+      rewrite <- assoc, <- pairing_split_l.
+      reflexivity.
+    }
+    reflexivity.
+  Qed.
+
+  Proposition equal_almost_surely_l2 {a x y z : C} (p : a --> x) (f g : x --> y) (h : x --> z) :
+    equal_almost_surely p f g -> p · ⟨f, h⟩ = p · ⟨g, h⟩.
+  Proof. 
+    intros e.
+    apply pairing_flip.
+    apply equal_almost_surely_r2.
     assumption.
   Qed.
 
@@ -166,6 +187,37 @@ Section PropertiesAlmostSurely.
     reflexivity.
   Qed.    
 
+  Proposition cancel_braiding_ase {y z : C} (f g : x --> y ⊗ z) :
+    f · sym_mon_braiding _ y z =_{p} g · sym_mon_braiding _ y z -> f =_{p} g.
+  Proof.
+    intros ase.
+    rewrite <- (id_right f), <- (id_right g).
+    rewrite <- !sym_mon_braiding_inv, !assoc.
+    apply ase_postcomp.
+    exact ase.
+  Qed.
+
+  Proposition ase_pairing_l {y z : C} (f g : x --> y) (h : x --> z) :
+    f =_{p} g -> ⟨f, h⟩ =_{p} ⟨g, h⟩.
+  Proof.
+    intros ase.
+    apply make_equal_almost_surely_l.
+    rewrite <- pairing_rassociator, assoc.
+    rewrite (equal_almost_surely_l2 _ f g _ ase).
+    rewrite <- assoc, pairing_rassociator.
+    reflexivity.
+  Qed.
+
+  Proposition ase_pairing_r {y z : C} (f g : x --> y) (h : x --> z) :
+    f =_{p} g -> ⟨h, f⟩ =_{p} ⟨h, g⟩.
+  Proof.
+    intros ase.
+    apply cancel_braiding_ase.
+    do 2 rewrite pairing_sym_mon_braiding.
+    apply ase_pairing_l.
+    exact ase.
+  Qed.
+
 End PropertiesAlmostSurely.
 
 (** * 3. Definition of Almost Sure Determinism *)
@@ -183,6 +235,26 @@ Section AlmostSurelyDeterministic.
     intros e.
     apply ase_from_eq.
     exact e.
+  Qed.
+
+  Proposition is_deterministic_ase_stable {a x y : C} (p : a --> x) (f g : x --> y) :
+    (f =_{p} g) -> is_deterministic_ase p f -> is_deterministic_ase p g.
+  Proof. 
+    intros ase df.
+    unfold is_deterministic_ase.
+
+    apply ase_trans with (f · copy y).
+    { apply ase_postcomp. apply ase_symm. exact ase. }
+
+    apply ase_trans with (copy x · f #⊗ f).
+    { apply df.  }
+
+    do 2 rewrite <- pairing_eq.
+
+    apply ase_trans with (⟨ f, g ⟩).
+    { apply ase_pairing_r. exact ase. }
+
+    apply ase_pairing_l. exact ase.
   Qed.
 
 End AlmostSurelyDeterministic.

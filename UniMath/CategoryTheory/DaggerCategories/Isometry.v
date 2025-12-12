@@ -225,6 +225,14 @@ Section IsometryCoisometryProperties.
     - abstract (apply unitary_isometry_coisometry; exact (pr2 f)).
   Defined.  
 
+  Definition unitary_to_coisometry {x y : C} (f : unitary dag x y) : coisometry dag x y.
+  Proof.
+    use make_coisometry.
+    - exact f.
+    - abstract (apply unitary_isometry_coisometry; exact (pr2 f)).
+  Defined.  
+
+  (* If an isomorphism is isometric, then it is unitary *)
   Lemma z_iso_isometry_unitary {x y : C} (f : z_iso x y) 
     : is_isometry dag f -> is_unitary dag f.
   Proof.
@@ -244,6 +252,7 @@ Section IsometryCoisometryProperties.
       apply z_iso_after_z_iso_inv.
   Qed.
 
+  (* If an isomorphism is coisometric, then it is unitary *)
   Lemma z_iso_coisometry_unitary {x y : C} (f : z_iso x y) 
     : is_coisometry dag f -> is_unitary dag f.
   Proof.

@@ -86,6 +86,7 @@ Section DaggerPropositions.
 
   Let dag : dagger PS := prob_space_dagger C.
 
+  (* Note: this uses relative positivity ... *)
   Lemma isos_coisometry {x y : PS} (f : z_iso x y) : is_coisometry dag f.
   Proof.
   Admitted.
@@ -155,7 +156,7 @@ Section CouplingDilators.
   Let krn := couplings_dagger_cat C.
 
   Definition det_to_coisom {x y : C} {p : I_{C} --> x} (f : x --> y): 
-    is_deterministic f -> coisometry krn (x ,, p) (y,, p · f).
+    is_deterministic_ase p f -> coisometry krn (x ,, p) (y,, p · f).
   Proof.
     intros detf.
     use make_coisometry.

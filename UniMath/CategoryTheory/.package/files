@@ -791,4 +791,5 @@ MarkovCategories/InformationFlowAxioms.v
 MarkovCategories/State.v
 MarkovCategories/ProbabilitySpaces.v
 MarkovCategories/Couplings.v
+MarkovCategories/RelativePositivity.v
 MarkovCategories/RelativeProduct.v
